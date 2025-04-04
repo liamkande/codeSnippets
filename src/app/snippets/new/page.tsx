@@ -21,6 +21,7 @@ export default function SnippetCreatePage() {
     // Redirect the user back to the root route
     redirect('/')
   }
+
   return (
     <form action={createSnippet}>
       <h3 className="font-bold m-3">Create a Snippet</h3>
