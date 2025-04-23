@@ -46,6 +46,8 @@ export async function createSnippet(
       code,
     },
   })
+  // will need to be handled in case we get an error when submitting data to the database.
+  throw new Error('Not implemented yet')
 
   // Redirect the user back to the root route
   redirect('/')
