@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { db } from '@/db'
 
@@ -17,6 +18,7 @@ export async function deleteSnippet(id: number) {
     where: { id },
   })
 
+  revalidatePath('/')
   redirect('/')
 }
 
@@ -41,13 +43,13 @@ export async function createSnippet(
     }
 
     // Create a new record in the database
-
     await db.snippet.create({
       data: {
         title,
         code,
       },
     })
+
     // test only
     // throw new Error('Failed to save to database.')
   } catch (err: unknown) {
@@ -62,6 +64,7 @@ export async function createSnippet(
     }
   }
 
+  revalidatePath('/')
   // Redirect the user back to the root route
   //remember we do not want to put our redirect in the try/catch block
   redirect('/')
