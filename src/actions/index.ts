@@ -4,11 +4,11 @@ import { redirect } from 'next/navigation'
 import { db } from '@/db'
 
 export async function editSnippet(id: number, code: string) {
-  // console.log(`Editing snippet with ID: ${id}, with: ${code}`)
   await db.snippet.update({
     where: { id },
     data: { code },
   })
+
   redirect(`/snippets/${id}`)
 }
 
@@ -24,21 +24,29 @@ export async function createSnippet(
   formState: { message: string },
   formData: FormData
 ) {
-  return {
-    message: 'Title must be longer',
+  // Check the user's inputs and make sure they're valid
+  const title = formData.get('title')
+  const code = formData.get('code')
+
+  if (typeof title !== 'string' || title.length < 3) {
+    return {
+      message: 'Title must be longer',
+    }
   }
-  // // Check the user's inputs and make sure they're valid
-  // const title = formData.get('title') as string;
-  // const code = formData.get('code') as string;
+  if (typeof code !== 'string' || code.length < 10) {
+    return {
+      message: 'Code must be longer',
+    }
+  }
 
-  // // Create a new record in the database
-  // const snippet = await db.snippet.create({
-  //   data: {
-  //     title,
-  //     code,
-  //   },
-  // });
+  // Create a new record in the database
+  const snippet = await db.snippet.create({
+    data: {
+      title,
+      code,
+    },
+  })
 
-  // // Redirect the user back to the root route
-  // redirect('/');
+  // Redirect the user back to the root route
+  redirect('/')
 }
