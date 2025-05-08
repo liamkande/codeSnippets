@@ -1,19 +1,34 @@
 'use client'
 import { useActionState, startTransition } from 'react'
-
 import * as actions from '@/actions'
+import { useSnippets } from '@/lib/context/SnippetContext'
 
 export default function SnippetCreatePage() {
   const [formState, action] = useActionState(actions.createSnippet, {
     message: '',
   })
 
+  const isProd = process.env.NODE_ENV === 'production'
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { addSnippet } = isProd ? useSnippets() : { addSnippet: null }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    startTransition(() => {
-      action(formData)
-    })
+    const title = formData.get('title') as string
+    const code = formData.get('code') as string
+
+    if (isProd && addSnippet) {
+      // Use Context in production for demo purposes
+      addSnippet(title, code)
+      event.currentTarget.reset()
+      console.log('addSnippet', title, code)
+    } else {
+      // Use Server Action in development
+      startTransition(() => {
+        action(formData)
+      })
+    }
   }
 
   return (
