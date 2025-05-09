@@ -2,8 +2,10 @@
 import { useActionState, startTransition } from 'react'
 import * as actions from '@/actions'
 import { useSnippets } from '@/lib/context/SnippetContext'
+import { useRouter } from 'next/navigation' // Add this import
 
 export default function SnippetCreatePage() {
+  const router = useRouter() // Add this
   const [formState, action] = useActionState(actions.createSnippet, {
     message: '',
   })
@@ -23,6 +25,9 @@ export default function SnippetCreatePage() {
       addSnippet(title, code)
       event.currentTarget.reset()
       console.log('addSnippet', title, code)
+      setTimeout(() => {
+        router.push('/')
+      }, 500) // 500ms delay before redirect
     } else {
       // Use Server Action in development
       startTransition(() => {
