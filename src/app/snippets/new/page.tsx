@@ -2,10 +2,10 @@
 import { useActionState, startTransition } from 'react'
 import * as actions from '@/actions'
 import { useSnippets } from '@/lib/context/SnippetContext'
-import { useRouter } from 'next/navigation' // Add this import
+import { useRouter } from 'next/navigation'
 
 export default function SnippetCreatePage() {
-  const router = useRouter() // Add this
+  const router = useRouter()
   const [formState, action] = useActionState(actions.createSnippet, {
     message: '',
   })
