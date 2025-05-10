@@ -1,18 +1,37 @@
 'use client'
 import { useActionState, startTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import * as actions from '@/actions'
 import { useSnippets } from '@/lib/context/SnippetContext'
-import { useRouter } from 'next/navigation'
+
+type SnippetHookResult = {
+  addSnippet: ((title: string, code: string) => void) | null
+}
+
+const useSnippetManagement = (): SnippetHookResult => {
+  const isProduction = process.env.NODE_ENV === 'production'
+
+  try {
+    // Only try to use context in production
+    if (isProduction) {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const snippetContext = useSnippets()
+      return { addSnippet: snippetContext.addSnippet }
+    }
+  } catch (error) {
+    // Handle any context errors silently
+    console.log('Development mode - not using context', error)
+  }
+
+  return { addSnippet: null }
+}
 
 export default function SnippetCreatePage() {
   const router = useRouter()
   const [formState, action] = useActionState(actions.createSnippet, {
     message: '',
   })
-
-  const isProd = process.env.NODE_ENV === 'production'
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { addSnippet } = isProd ? useSnippets() : { addSnippet: null }
+  const { addSnippet } = useSnippetManagement()
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -20,7 +39,7 @@ export default function SnippetCreatePage() {
     const title = formData.get('title') as string
     const code = formData.get('code') as string
 
-    if (isProd && addSnippet) {
+    if (addSnippet) {
       // Use Context in production for demo purposes
       addSnippet(title, code)
       event.currentTarget.reset()
