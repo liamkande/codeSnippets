@@ -43,7 +43,7 @@ export default function SnippetCreatePage() {
       // Use Context in production for demo purposes
       addSnippet(title, code)
       event.currentTarget.reset()
-      console.log('addSnippet', title, code)
+      // console.log('addSnippet', title, code)
       setTimeout(() => {
         router.push('/')
       }, 500) // 500ms delay before redirect
