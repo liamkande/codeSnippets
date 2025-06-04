@@ -258,6 +258,54 @@ The easiest way to deploy this Next.js app:
 
 ---
 
+### Environment-Specific Behavior
+- **Vercel Production**: Automatically runs in production mode using React Context (no database required)
+- **Vercel Preview**: Also runs in production mode for consistent demo experience
+- **Local Development**: Uses SQLite database with Prisma
+
+### Quick Deploy to Vercel
+
+1. **One-Click Deploy**:
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/snippets)
+
+2. **Manual Deployment with Vercel CLI**:
+   ```bash
+   # Install Vercel CLI if not already installed
+   npm i -g vercel
+   
+   # Deploy to preview (non-production) environment
+   vercel
+   
+   # Deploy directly to production environment
+   vercel --prod
+   
+   # Follow the prompts:
+   # - Link to existing project or create new
+   # - Select framework preset: Next.js
+   # - No environment variables needed for demo mode
+   ```
+
+3. **Additional Vercel CLI Commands**:
+   ```bash
+   # View deployment details and logs
+   vercel logs <deployment-url-or-id>
+   
+   # List all deployments for the project
+   vercel ls
+   
+   # Inspect a specific deployment
+   vercel inspect <deployment-url-or-id>
+   
+   # Roll back to a previous deployment
+   vercel rollback <deployment-id>
+   
+   # Connect to a specific project (if you have multiple)
+   vercel link
+   
+   # Pull latest project settings and environment variables
+   vercel pull
+   ```
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
