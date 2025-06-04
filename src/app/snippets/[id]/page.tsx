@@ -1,7 +1,15 @@
+'use client'
+import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { db } from '@/db'
+import { useSnippets } from '@/lib/context/SnippetContext'
 import * as actions from '@/actions'
+
+interface Snippet {
+  id: number
+  title: string
+  code: string
+}
 
 interface SnippetShowPageProps {
   params: Promise<{
@@ -9,14 +17,72 @@ interface SnippetShowPageProps {
   }>
 }
 
-export default async function SnippetShowPage(props: SnippetShowPageProps) {
-  await new Promise((r) => setTimeout(r, 2000))
+export default function SnippetShowPage(props: SnippetShowPageProps) {
+  const [snippet, setSnippet] = useState<Snippet | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [snippetId, setSnippetId] = useState<string>('')
+  const isProduction = process.env.NODE_ENV === 'production'
 
-  const { id } = await props.params
+  // Get context snippets in production
+  const contextSnippets = useMemo(() => {
+    if (isProduction) {
+      try {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const context = useSnippets()
+        return context.snippets
+      } catch (error) {
+        console.log('Context not available', error)
+        return []
+      }
+    }
+    return []
+  }, [isProduction])
 
-  const snippet = await db.snippet.findFirst({
-    where: { id: parseInt(id) },
-  })
+  // Get the ID from params
+  useEffect(() => {
+    props.params.then((params) => {
+      setSnippetId(params.id)
+    })
+  }, [props.params])
+
+  // Load snippet data
+  useEffect(() => {
+    if (!snippetId) return
+
+    const loadSnippet = async () => {
+      if (isProduction) {
+        // Production: use context
+        const foundSnippet = contextSnippets.find(
+          (s) => s.id === parseInt(snippetId)
+        )
+        setSnippet(foundSnippet || null)
+      } else {
+        // Development: fetch from API
+        try {
+          const response = await fetch(`/api/snippets/${snippetId}`)
+          if (response.ok) {
+            const data = await response.json()
+            setSnippet(data)
+          } else {
+            setSnippet(null)
+          }
+        } catch (error) {
+          console.error('Fetch error:', error)
+          setSnippet(null)
+        }
+      }
+      setLoading(false)
+    }
+
+    // Add delay for demo purposes (like your original)
+    setTimeout(() => {
+      loadSnippet()
+    }, 2000)
+  }, [snippetId, isProduction, contextSnippets])
+
+  if (loading) {
+    return <div className="p-4">Loading snippet...</div>
+  }
 
   if (!snippet) {
     return notFound()
@@ -45,15 +111,4 @@ export default async function SnippetShowPage(props: SnippetShowPageProps) {
       </pre>
     </div>
   )
-}
-
-// Remember it has to be called generateStaticParams
-export async function generateStaticParams() {
-  const snippets = await db.snippet.findMany()
-
-  return snippets.map((snippet) => {
-    return {
-      id: snippet.id.toString(),
-    }
-  })
 }
