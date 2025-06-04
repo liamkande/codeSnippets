@@ -55,7 +55,10 @@ Code Snippets Manager is a full-stack web application that allows developers to 
 - **Prettier**: Code formatting
 
 ---
+## Getting Started
 
+1. Clone this repository to your local machine.
+   git clone https://github.com/liamkande/codeSnippets
 ## Installation
 
 ### Prerequisites
@@ -290,7 +293,7 @@ Contributions are welcome! Please follow these steps:
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is open source and available under the MIT License.
 
 ---
 
