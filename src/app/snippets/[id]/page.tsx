@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 import { useSnippets } from '@/lib/context/SnippetContext'
 import * as actions from '@/actions'
 
@@ -21,21 +21,25 @@ export default function SnippetShowPage(props: SnippetShowPageProps) {
   const [snippet, setSnippet] = useState<Snippet | null>(null)
   const [loading, setLoading] = useState(true)
   const [snippetId, setSnippetId] = useState<string>('')
+  const router = useRouter()
   const isProduction = process.env.NODE_ENV === 'production'
 
-  // Get context snippets in production
-  const contextSnippets = useMemo(() => {
+  // Get context snippets and delete function in production
+  const { contextSnippets, deleteSnippetFromContext } = useMemo(() => {
     if (isProduction) {
       try {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const context = useSnippets()
-        return context.snippets
+        return {
+          contextSnippets: context.snippets,
+          deleteSnippetFromContext: context.deleteSnippet,
+        }
       } catch (error) {
         console.log('Context not available', error)
-        return []
+        return { contextSnippets: [], deleteSnippetFromContext: null }
       }
     }
-    return []
+    return { contextSnippets: [], deleteSnippetFromContext: null }
   }, [isProduction])
 
   // Get the ID from params
@@ -74,11 +78,25 @@ export default function SnippetShowPage(props: SnippetShowPageProps) {
       setLoading(false)
     }
 
-    // Add delay for demo purposes (like your original)
+    // Add delay for demo purposes
     setTimeout(() => {
       loadSnippet()
     }, 2000)
   }, [snippetId, isProduction, contextSnippets])
+
+  const handleDelete = async (event: React.FormEvent) => {
+    event.preventDefault()
+
+    if (isProduction && deleteSnippetFromContext && snippet) {
+      // Production: use context
+      deleteSnippetFromContext(snippet.id)
+      router.push('/')
+    } else if (snippet) {
+      // Development: use server action
+      const deleteAction = actions.deleteSnippet.bind(null, snippet.id)
+      await deleteAction() // Remove the formData argument
+    }
+  }
 
   if (loading) {
     return <div className="p-4">Loading snippet...</div>
@@ -87,8 +105,6 @@ export default function SnippetShowPage(props: SnippetShowPageProps) {
   if (!snippet) {
     return notFound()
   }
-
-  const deleteSnippetAction = actions.deleteSnippet.bind(null, snippet.id)
 
   return (
     <div>
@@ -101,8 +117,10 @@ export default function SnippetShowPage(props: SnippetShowPageProps) {
           >
             Edit
           </Link>
-          <form action={deleteSnippetAction}>
-            <button className="p-2 border rounded">Delete</button>
+          <form onSubmit={handleDelete}>
+            <button type="submit" className="p-2 border rounded">
+              Delete
+            </button>
           </form>
         </div>
       </div>
